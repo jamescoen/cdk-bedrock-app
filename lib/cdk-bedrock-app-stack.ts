@@ -1,9 +1,9 @@
-import * as cdk from "aws-cdk-lib";
-import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import * as iam from "aws-cdk-lib/aws-iam";
-import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as path from "path";
-import { Construct } from "constructs";
+import * as cdk from 'aws-cdk-lib';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as path from 'path';
+import { Construct } from 'constructs';
 
 interface CdkBedrockAppStackProps extends cdk.StackProps {
   stageName: string;
@@ -19,6 +19,9 @@ export class CdkBedrockAppStack extends cdk.Stack {
      *
      * https://aws.amazon.com/api-gateway/features/
      */
+
+    //create an api gateway using RestApi, give it a name, description, and deploy options
+    // This corresponds to the "purple step" in the architecture stage of the readme
     const api = new apigateway.RestApi(this, `BedrockAPI-${props.stageName}`, {
       restApiName: `Bedrock API ${props.stageName}`,
       description: `API Gateway for Bedrock queries - ${props.stageName}`,
@@ -37,14 +40,16 @@ export class CdkBedrockAppStack extends cdk.Stack {
      * is called "handler", these can be changed easily. You can have
      * "pug.beagle" if you wanted to, but index.handler is convention.
      */
+
+    // the lamda function is in it's own directory nested in lib.
     const queryBedrockLambda = new lambda.Function(
       this,
       `QueryBedrockLambdaFunction-${props!.stageName}`,
       {
         runtime: lambda.Runtime.NODEJS_20_X,
-        handler: "index.handler",
+        handler: 'index.handler',
         code: lambda.Code.fromAsset(
-          path.resolve(__dirname, "./lambdas/queryBedrock")
+          path.resolve(__dirname, './lambdas/queryBedrock')
         ),
         environment: {
           STAGE_NAME: props!.stageName,
@@ -58,10 +63,12 @@ export class CdkBedrockAppStack extends cdk.Stack {
      * AWS Bedrock. Here we leave this very permissive to make it easy to change the FM
      * more easily, but it should be restricted down.
      */
+
+    //this allows access to any of the bedrock models - you could limit this to specific models.
     queryBedrockLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["bedrock:InvokeModel", "bedrock:ListFoundationModels"],
-        resources: ["*"], // You might want to restrict this to specific model ARNs
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
+        resources: ['*'], // You might want to restrict this to specific model ARNs
       })
     );
 
@@ -70,9 +77,10 @@ export class CdkBedrockAppStack extends cdk.Stack {
      * This creates the actual path within API Gateway and attaches the Lambda function
      * that we created above.
      */
-    const bedrockResource = api.root.addResource("v1").addResource("analysis");
+
+    const bedrockResource = api.root.addResource('v1').addResource('analysis');
     bedrockResource.addMethod(
-      "POST",
+      'POST',
       new apigateway.LambdaIntegration(queryBedrockLambda)
     );
 

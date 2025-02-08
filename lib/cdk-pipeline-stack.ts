@@ -35,9 +35,11 @@ export class CdkPipelineStack extends cdk.Stack {
     const pipeline = new pipelines.CodePipeline(this, 'CdkCodePipeline', {
       pipelineName: 'CdkCodePipeline',
       synth: new pipelines.ShellStep('Synth', {
+        //what repo, what branch
         input: pipelines.CodePipelineSource.gitHub(githubRepo, 'main', {
           authentication: githubAccessToken,
         }),
+        //npm run build-all is a recursive script to run npm i and npm build in nested package.json's
         commands: ['npm i', 'npm run build-all', 'npx cdk synth'],
       }),
     });
@@ -48,6 +50,7 @@ export class CdkPipelineStack extends cdk.Stack {
      * This step AUTOMATICALLY deploys
      */
 
+    //creating a devStage
     const devStage = new cdk.Stage(this, 'DevStage');
     const cdkBedrockDev = new CdkBedrockAppStack(devStage, 'CDKBedrock-Dev', {
       env: {

@@ -1,23 +1,25 @@
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
-} from "@aws-sdk/client-bedrock-runtime";
+} from '@aws-sdk/client-bedrock-runtime';
 
-const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" }); // Replace with your desired region
+const bedrockClient = new BedrockRuntimeClient({ region: 'us-east-1' }); // Replace with your desired region
 
+// name this whatever you want - in cdk-bedrock-app-stack.ts in the queryBedrockHandler handler property.
 export const handler = async (event: any): Promise<any> => {
   /**
    * We're using a Proxy Lambda integration
    * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
    */
   const headers = {
-    "Access-Control-Allow-Origin": "*", // Update this to your specific domain in production
-    "Access-Control-Allow-Headers":
-      "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-    "Access-Control-Allow-Methods": "OPTIONS,POST",
+    'Access-Control-Allow-Origin': '*', // Update this to your specific domain in production
+    'Access-Control-Allow-Headers':
+      'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+    'Access-Control-Allow-Methods': 'OPTIONS,POST',
   };
 
   try {
+    //lamda functions take in an event, with a body property, which is essentially your request body.
     const requestBody = JSON.parse(event.body);
 
     /**
@@ -34,14 +36,15 @@ export const handler = async (event: any): Promise<any> => {
      * https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-runtime_example_bedrock-runtime_InvokeModel_AnthropicClaude_section.html
      */
     const command = new InvokeModelCommand({
-      modelId: "anthropic.claude-3-haiku-20240307-v1:0",
-      contentType: "application/json",
-      accept: "application/json",
+      // very cost-effective model
+      modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+      contentType: 'application/json',
+      accept: 'application/json',
       body: JSON.stringify({
-        anthropic_version: "bedrock-2023-05-31",
+        anthropic_version: 'bedrock-2023-05-31',
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: prompt,
           },
         ],
@@ -94,12 +97,12 @@ export const handler = async (event: any): Promise<any> => {
       body: JSON.stringify(responseBodyText),
     };
   } catch (error) {
-    console.error("Error:", error);
+    console.error('Error:', error);
     return {
       statusCode: 500,
       headers: headers,
       body: JSON.stringify({
-        error: "An error occurred while processing the request",
+        error: 'An error occurred while processing the request',
       }),
     };
   }
